@@ -13,12 +13,14 @@
             font-family: Arial, sans-serif;
         }
         .status-box {
-            margin-top: 20px;
-            padding: 10px 20px;
+            margin: 10px 0;
+            padding: 15px 20px;
             background-color: #f0f8ff;
             border-radius: 5px;
             display: flex;
             align-items: center;
+            width: 300px; 
+            justify-content: space-between;
         }
         .dot {
             height: 15px;
@@ -32,24 +34,32 @@
 <body>
     <h1>FLJPV2APIStatus</h1>
     <h2>FLJP(ブリ)のv2APIのステータスを見れるページです。</h2>
-    <div class="status-box">
-        <span>Status</span>
-        <span class="dot" id="statusDot"></span>
-    </div>
+    <div id="statusContainer"></div>
 
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script>
+        const apiData = [
+            { displayname: "Status", API: "https://fljpapi.jp/api/v2/fortnitestatus" },
+            { displayname: "EventFlag", API: "https://fljpapi.jp/api/v2/timeline" },
+            { displayname: "Build", API: "https://fljpapi.jp/api/v2/build" }
+        ];
+
         async function checkAPIStatus() {
-            const apiData = [
-                { displayname: "Status", API: "https://fljpapi.jp/api/v2/fortnitestatus" } ,
-                { displayname: "EventFlag", API: "https://fljpapi.jp/api/v2/timeline" } ,
-                { displayname: "Build", API: "https://fljpapi.jp/api/v2/build" } 
-            ];
+            const container = document.getElementById('statusContainer');
+            container.innerHTML = ''; 
 
             for (const item of apiData) {
+                const statusBox = document.createElement('div');
+                statusBox.className = 'status-box';
+                statusBox.innerHTML = `
+                    <span>${item.displayname}</span>
+                    <span class="dot" id="dot-${item.displayname}"></span>
+                `;
+                container.appendChild(statusBox);
+
                 try {
                     const response = await axios.get(item.API);
-                    const dot = document.getElementById('statusDot');
+                    const dot = document.getElementById(`dot-${item.displayname}`);
                     if (response.status >= 200 && response.status < 300) {
                         dot.style.backgroundColor = 'green';
                     } else if (response.status >= 200 && response.status < 500) {
@@ -58,13 +68,13 @@
                         dot.style.backgroundColor = 'red';
                     }
                 } catch (error) {
-                    const dot = document.getElementById('statusDot');
+                    const dot = document.getElementById(`dot-${item.displayname}`);
                     dot.style.backgroundColor = 'red';
                 }
             }
         }
 
-        // ページ読み込み時にステータスをチェック
+     
         window.onload = checkAPIStatus;
     </script>
 </body>
