@@ -38,6 +38,9 @@
     <div id="statusContainer"></div>
     <h3>Build</h3>
     <div id="buildapi"></div>
+    <h3>beta版API</h3>
+    <div id="bataapi"></div>
+    <p>現在beta版のAPIがDBに存在しません。</p>
 
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script>
@@ -60,6 +63,7 @@
             { displayname: "PS4", API: "https://fljpapi.jp/api/v2/build/PS4" },
             { displayname: "PS5", API: "https://fljpapi.jp/api/v2/build/PS5" }
         ];
+        const betaapi = [];
 
         async function checkAPIStatus() {
             const container = document.getElementById('statusContainer');
@@ -120,11 +124,41 @@
                 }
             }
         }
+        async function bataapi() {
+            const container = document.getElementById('bataapi');
+            container.innerHTML = ''; 
+
+            for (const item of bataapi) {
+                const statusBox = document.createElement('div');
+                statusBox.className = 'status-box';
+                statusBox.innerHTML = `
+                    <span>${item.displayname}</span>
+                    <span class="dot" id="dot-${item.displayname}"></span>
+                `;
+                container.appendChild(statusBox);
+
+                try {
+                    const response = await axios.get(item.API);
+                    const dot = document.getElementById(`dot-${item.displayname}`);
+                    if (response.status >= 200 && response.status < 300) {
+                        dot.style.backgroundColor = 'green';
+                    } else if (response.status >= 200 && response.status < 500) {
+                        dot.style.backgroundColor = 'yellow';
+                    } else if (response.status >= 500) {
+                        dot.style.backgroundColor = 'red';
+                    }
+                } catch (error) {
+                    const dot = document.getElementById(`dot-${item.displayname}`);
+                    dot.style.backgroundColor = 'red';
+                }
+            }
+        }
 
         
         window.onload = function() {
             checkAPIStatus();
             buildapis();
+            bataapi();
         };
     </script>
 </body>
