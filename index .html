@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FLJPV2APIStatus</title>
+    <style>
+        body {
+            background: linear-gradient(to right, #e0f7fa, #add8e6);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-family: Arial, sans-serif;
+        }
+        .status-box {
+            margin: 10px 0;
+            padding: 15px 20px;
+            background-color: #f0f8ff;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            width: 300px; 
+            justify-content: space-between;
+        }
+        .dot {
+            height: 15px;
+            width: 15px;
+            background-color: #ccc;
+            border-radius: 50%;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>FLJPV2APIStatus</h1>
+    <h2>FLJP(ブリ)のAPIのステータスを見れるページです。</h2>
+    <p>当Webサイトの問題かなにかで、一部のAPIがエラー状態と表示されます。この問題を調査しています。</p>
+    <div id="statusContainer"></div>
+    <h3>Build</h3>
+    <div id="buildapi"></div>
+    <h3>beta版API</h3>
+    <div id="bataapi"></div>
+    <p>現在beta版のAPIがDBに存在しません。</p>
+    <h2>過去のメンテナンスや問題</h2>
+    <h3>FLJPAPIv3以降について</h3>
+    <p>FLJP API をご利用いただきありがとうございます。</p>
+    <p>このたび、FLJP API の更なる性能向上と安定運用を目的として、「FLJP API v3」 を08月16日にリリースします</p>
+    <p>併せて、既存の v2 エンドポイントは、v3のリリース後に段階的な廃止を予定しております。</p>
+    <p>今後の日程</p>
+    <p>2025年8月16日：v3 エンドポイント提供開始</p>
+    <p>2025年8月20日：v3 エンドポイントのエラーなどの修正</p>
+    <p>2025年9月中旬：v2 順次廃止開始</p>
+    <p>2025年10月初旬：v2 エンドポイントの全て廃止</p>
+    <h3>ランクAPIが動作しない問題</h3>
+    <p>現在、ランクAPIが正しく動作しない問題を調査しているようです。</p>
+    <h3>BuildAPIのWindowsの修正|完了</h3>
+    <p>BuildAPIのWindowsが利用できなくなった問題</p>
+    <p>8月9日の深夜修正（推測）</p>
+    <h3>APIメンテナンス|完了</h3>
+    <p>全エンドポイントのCORS対応及びBuildのWindowが403を変えす問題の修正</p>
+    <p>期間：8月７日 10時00分〜12時30分</p>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        const apiData = [
+            { displayname: "Status", API: "https://fljpapi.jp/api/v2/fortnitestatus" },
+            { displayname: "EventFlag", API: "https://fljpapi.jp/api/v2/timeline" },
+            { displayname: "Build", API: "https://fljpapi.jp/api/v2/build/" },
+            { displayname: "cloudstorage", API: "https://fljpapi.jp/api/v2/cloudstorage" },
+            { displayname: "トーナメント", API: "https://fljpapi.jp/api/tournamentlist?region=ASIA&platform=Windows" },
+            { displayname: "News", API: "https://fljpapi.jp/api/v2/news?platform=windows&language=ja&serverRegion=ASIA&tags=Product.BR&country=JP" },
+            { displayname: "LookUP", API: "https://fljpapi.jp/api/v2/lookup?accountid=rgc_rion" },
+            { displayname: "RANK", API: "https://fljpapi.jp/api/v2/rank/rgc_rion" },
+            { displayname: "二モニック", API: "https://fljpapi.jp/api/v2/links/fn/set_br_playlists" }
+        ];
+        const buildapi = [
+            { displayname: "Windows", API: "https://fljpapi.jp/api/v2/build/Windows" },
+            { displayname: "iOS", API: "https://fljpapi.jp/api/v2/build/iOS" },
+            { displayname: "Andoroid", API: "https://fljpapi.jp/api/v2/build/Android" },
+            { displayname: "XboxOne", API: "https://fljpapi.jp/api/v2/build/Xbox%20One" },
+            { displayname: "PS4", API: "https://fljpapi.jp/api/v2/build/PS4" },
+            { displayname: "PS5", API: "https://fljpapi.jp/api/v2/build/PS5" }
+        ];
+        const betaapi = [];
+
+        async function checkAPIStatus() {
+            const container = document.getElementById('statusContainer');
+            container.innerHTML = ''; 
+
+            for (const item of apiData) {
+                const statusBox = document.createElement('div');
+                statusBox.className = 'status-box';
+                statusBox.innerHTML = `
+                    <span>${item.displayname}</span>
+                    <span class="dot" id="dot-${item.displayname}"></span>
+                `;
+                container.appendChild(statusBox);
+
+                try {
+                    const response = await axios.get(item.API);
+                    const dot = document.getElementById(`dot-${item.displayname}`);
+                    if (response.status >= 200 && response.status < 300) {
+                        dot.style.backgroundColor = 'green';
+                    } else if (response.status >= 200 && response.status < 500) {
+                        dot.style.backgroundColor = 'yellow';
+                    } else if (response.status >= 500) {
+                        dot.style.backgroundColor = 'red';
+                    }
+                } catch (error) {
+                    const dot = document.getElementById(`dot-${item.displayname}`);
+                    dot.style.backgroundColor = 'red';
+                }
+            }
+        }
+
+        async function buildapis() {
+            const container = document.getElementById('buildapi');
+            container.innerHTML = ''; 
+
+            for (const item of buildapi) {
+                const statusBox = document.createElement('div');
+                statusBox.className = 'status-box';
+                statusBox.innerHTML = `
+                    <span>${item.displayname}</span>
+                    <span class="dot" id="dot-${item.displayname}"></span>
+                `;
+                container.appendChild(statusBox);
+
+                try {
+                    const response = await axios.get(item.API);
+                    const dot = document.getElementById(`dot-${item.displayname}`);
+                    if (response.status >= 200 && response.status < 300) {
+                        dot.style.backgroundColor = 'green';
+                    } else if (response.status >= 200 && response.status < 500) {
+                        dot.style.backgroundColor = 'yellow';
+                    } else if (response.status >= 500) {
+                        dot.style.backgroundColor = 'red';
+                    }
+                } catch (error) {
+                    const dot = document.getElementById(`dot-${item.displayname}`);
+                    dot.style.backgroundColor = 'red';
+                }
+            }
+        }
+        async function bataapi() {
+            const container = document.getElementById('bataapi');
+            container.innerHTML = ''; 
+
+            for (const item of bataapi) {
+                const statusBox = document.createElement('div');
+                statusBox.className = 'status-box';
+                statusBox.innerHTML = `
+                    <span>${item.displayname}</span>
+                    <span class="dot" id="dot-${item.displayname}"></span>
+                `;
+                container.appendChild(statusBox);
+
+                try {
+                    const response = await axios.get(item.API);
+                    const dot = document.getElementById(`dot-${item.displayname}`);
+                    if (response.status >= 200 && response.status < 300) {
+                        dot.style.backgroundColor = 'green';
+                    } else if (response.status >= 200 && response.status < 500) {
+                        dot.style.backgroundColor = 'yellow';
+                    } else if (response.status >= 500) {
+                        dot.style.backgroundColor = 'red';
+                    }
+                } catch (error) {
+                    const dot = document.getElementById(`dot-${item.displayname}`);
+                    dot.style.backgroundColor = 'red';
+                }
+            }
+        }
+
+        
+        window.onload = function() {
+            checkAPIStatus();
+            buildapis();
+            bataapi();
+        };
+    </script>
+</body>
+</html>
